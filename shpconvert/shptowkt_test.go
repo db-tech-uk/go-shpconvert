@@ -8,7 +8,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/rockwell-uk/shapefile"
+	"github.com/db-tech-uk/shapefile"
 )
 
 //nolint:dupl

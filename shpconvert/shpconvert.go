@@ -3,14 +3,14 @@ package shpconvert
 import (
 	"fmt"
 
-	"github.com/rockwell-uk/shapefile/shp"
+	"github.com/db-tech-uk/shapefile/shp"
 	"github.com/twpayne/go-geom"
 	"github.com/twpayne/go-geom/encoding/wkb"
 	"github.com/twpayne/go-geom/encoding/wkt"
 )
 
 func ShpToWKB(s shp.Shape) ([]byte, error) {
-	var funcName string = "shpconvert.ShpToWKB"
+	funcName := "shpconvert.ShpToWKB"
 
 	r, err := getGeom(s)
 	if err != nil {
@@ -32,7 +32,7 @@ func ShpToWKB(s shp.Shape) ([]byte, error) {
 }
 
 func ShpToWKT(s shp.Shape) (string, error) {
-	var funcName string = "shpconvert.ShpToWKT"
+	funcName := "shpconvert.ShpToWKT"
 
 	r, err := getGeom(s)
 	if err != nil {
@@ -54,7 +54,7 @@ func ShpToWKT(s shp.Shape) (string, error) {
 }
 
 func getGeom(s shp.Shape) (interface{}, error) {
-	var funcName string = "shpconvert.getGeom"
+	funcName := "shpconvert.getGeom"
 
 	var r interface{}
 
@@ -91,7 +91,7 @@ func getGeom(s shp.Shape) (interface{}, error) {
 }
 
 func addLinearPoints(r *geom.LineString, points []shp.Point) *geom.LineString {
-	coords := []geom.Coord{}
+	coords := make([]geom.Coord, 0, len(points))
 
 	for _, pt := range points {
 		coords = append(coords, geom.Coord{pt.X, pt.Y})
@@ -103,19 +103,19 @@ func addLinearPoints(r *geom.LineString, points []shp.Point) *geom.LineString {
 }
 
 func addPolygonPoints(r *geom.Polygon, points []shp.Point, parts []int32, numParts int32) *geom.Polygon {
-	var allcoords [][]geom.Coord
-	var startIndex, endIndex int32
+	n := int(numParts)
+	allcoords := make([][]geom.Coord, 0, max(n, 0))
 
-	for i := 0; i < int(numParts); i++ {
-		var coords []geom.Coord
+	for i := 0; i < n; i++ {
+		// widen int32 part offsets to int rather than narrowing len(points)
+		startIndex := int(parts[i])
+		endIndex := len(points)
 
-		startIndex = parts[int32(i)]
-
-		if int32(i) == numParts-1 {
-			endIndex = int32(len(points))
-		} else {
-			endIndex = parts[i+1]
+		if i < n-1 {
+			endIndex = int(parts[i+1])
 		}
+
+		coords := make([]geom.Coord, 0, max(endIndex-startIndex, 0))
 
 		for j := startIndex; j < endIndex; j++ {
 			coords = append(coords, geom.Coord{points[j].X, points[j].Y})
